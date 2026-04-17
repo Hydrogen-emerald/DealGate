@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>DealGate — Best Deals</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Cormorant:wght@600;700&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Plus Jakarta Sans', 'Segoe UI', sans-serif; background: #F5F2ED; color: #1C1C1E; min-height: 100vh; }
+
+  /* ── HEADER ── */
+  header { background: #1C3A2D; padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .logo-name { font-family: 'Cormorant', Georgia, serif; font-size: 34px; font-weight: 700; color: #D4A853; line-height: 1; }
+  .logo-sub { font-size: 10px; color: rgba(255,255,255,.4); letter-spacing: 1.8px; text-transform: uppercase; margin-top: 3px; }
+  .header-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .lang-strip { display: flex; gap: 2px; background: rgba(255,255,255,.08); border-radius: 9px; padding: 4px; }
+  .lbtn { background: transparent; border: none; padding: 6px 9px; font-size: 12px; font-weight: 700; cursor: pointer; border-radius: 6px; color: rgba(255,255,255,.55); font-family: inherit; transition: all .15s; }
+  .lbtn.active { background: rgba(255,255,255,.9); color: #1C3A2D; }
+  .lbtn:not(.active):hover { color: #fff; background: rgba(255,255,255,.15); }
+  .admin-btn { background: #D4A853; color: #1C1C1E; border: none; border-radius: 10px; padding: 9px 16px; font-weight: 700; font-size: 13px; cursor: pointer; font-family: inherit; transition: opacity .18s; }
+  .admin-btn:hover { opacity: .85; }
+
+  /* ── HERO ── */
+  .hero { position: relative; background: linear-gradient(135deg, #1C3A2D 0%, #2A5240 100%); padding: 56px 28px 52px; text-align: center; overflow: hidden; }
+  .hero::before { content: ''; position: absolute; top: -60px; left: -60px; width: 260px; height: 260px; background: rgba(212,168,83,.08); border-radius: 50%; }
+  .hero::after { content: ''; position: absolute; bottom: -40px; right: -40px; width: 200px; height: 200px; background: rgba(212,168,83,.06); border-radius: 50%; }
+  .hero h1 { font-family: 'Cormorant', Georgia, serif; font-size: clamp(30px, 6vw, 56px); font-weight: 700; color: #fff; position: relative; line-height: 1.12; }
+  .hero h1 span { color: #D4A853; }
+  .hero p { color: rgba(255,255,255,.5); margin-top: 13px; font-size: 15px; position: relative; }
+
+  /* ── FILTER BAR ── */
+  .filter-bar { background: #fff; border-bottom: 1px solid #EAE6E0; position: sticky; top: 0; z-index: 10; box-shadow: 0 2px 8px rgba(0,0,0,.05); }
+  .filter-inner { max-width: 1200px; margin: 0 auto; padding: 13px 22px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .scroll-x { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; flex: 1; min-width: 0; }
+  .scroll-x::-webkit-scrollbar { display: none; }
+  .pill { border: 1.5px solid #DDD9D1; background: #fff; color: #44443C; border-radius: 50px; padding: 7px 16px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: all .18s; font-family: inherit; }
+  .pill:hover { border-color: #1C3A2D; color: #1C3A2D; }
+  .pill.active { background: #1C3A2D; color: #fff; border-color: #1C3A2D; }
+  .filter-selects { display: flex; gap: 10px; flex-shrink: 0; }
+  .sel-f { padding: 9px 12px; border-radius: 9px; border: 1.5px solid #DDD9D1; font-size: 13px; font-family: inherit; background: #fff; cursor: pointer; outline: none; color: #1C1C1E; transition: border-color .15s; }
+  .sel-f:focus { border-color: #1C3A2D; }
+
+  /* ── GRID ── */
+  main { max-width: 1200px; margin: 0 auto; padding: 40px 22px 60px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 24px; }
+  .empty-state { text-align: center; padding: 70px 20px; }
+  .empty-state .empty-icon { font-size: 52px; margin-bottom: 16px; }
+  .empty-state p { color: #888; font-size: 15px; }
+
+  /* ── CARD ── */
+  .card { background: #fff; border-radius: 18px; overflow: hidden; border: 1px solid #EAE6E0; transition: transform .22s ease, box-shadow .22s ease; display: flex; flex-direction: column; }
+  .card:hover { transform: translateY(-5px); box-shadow: 0 18px 40px rgba(0,0,0,.10); }
+  .card-img { height: 210px; position: relative; background: #F0EDE8; overflow: hidden; flex-shrink: 0; }
+  .card-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .card-img-placeholder { height: 100%; display: flex; align-items: center; justify-content: center; font-size: 52px; }
+  .badge { position: absolute; top: 12px; left: 12px; border-radius: 7px; padding: 4px 11px; font-size: 11px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase; }
+  .badge-bestSeller { background: #E8900A; color: #fff; }
+  .badge-new { background: #059669; color: #fff; }
+  .badge-featured { background: #7C3AED; color: #fff; }
+  .card-body { padding: 18px 18px 20px; display: flex; flex-direction: column; flex: 1; }
+  .card-cat { font-size: 10px; color: #9E9A92; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 5px; }
+  .card-name { font-size: 15px; font-weight: 700; margin-bottom: 8px; line-height: 1.4; color: #1C1C1E; }
+  .card-desc { font-size: 13px; color: #72706A; line-height: 1.55; margin-bottom: 14px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; flex: 1; }
+  .card-price { font-family: 'Cormorant', Georgia, serif; font-size: 26px; font-weight: 700; color: #1C3A2D; margin-bottom: 14px; }
+  .cta { display: block; text-align: center; text-decoration: none; background: #1C3A2D; color: #fff; border-radius: 11px; padding: 13px 18px; font-weight: 700; font-size: 14px; font-family: inherit; transition: background .18s, transform .18s; cursor: pointer; border: none; width: 100%; }
+  .cta:hover { background: #D4A853; color: #1C1C1E; transform: translateY(-1px); }
+
+  /* ── FOOTER ── */
+  footer { background: #1C3A2D; padding: 36px 28px 28px; }
+  .footer-inner { max-width: 1200px; margin: 0 auto; }
+  .footer-logo { font-family: 'Cormorant', Georgia, serif; font-size: 24px; color: #D4A853; margin-bottom: 6px; }
+  .disclaimer { color: rgba(255,255,255,.32); font-size: 10.5px; line-height: 1.75; max-width: 820px; margin-top: 20px; border-top: 1px solid rgba(255,255,255,.1); padding-top: 18px; }
+
+  /* ── MODAL ── */
+  .overlay { position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 200; display: none; align-items: center; justify-content: center; padding: 16px; }
+  .overlay.open { display: flex; }
+  .modal { background: #fff; border-radius: 22px; padding: 28px; max-width: 540px; width: 100%; max-height: 92vh; overflow-y: auto; }
+  .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; }
+  .modal-title { font-family: 'Cormorant', Georgia, serif; font-size: 26px; font-weight: 700; }
+  .close-btn { background: #F0ECE4; border: none; border-radius: 9px; padding: 8px 14px; cursor: pointer; font-size: 13px; font-weight: 600; font-family: inherit; }
+  .form-box { background: #F7F4EF; border-radius: 14px; padding: 20px; margin-bottom: 24px; }
+  .form-label { display: block; font-size: 12px; font-weight: 600; color: #5A6478; text-transform: uppercase; letter-spacing: .7px; margin-bottom: 5px; }
+  .form-group { display: flex; flex-direction: column; gap: 5px; margin-bottom: 12px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .f-input { padding: 10px 13px; border-radius: 9px; border: 1.5px solid #E2DDD6; font-size: 14px; font-family: inherit; outline: none; background: #FDFBF8; color: #1C1C1E; width: 100%; transition: border-color .15s, box-shadow .15s; }
+  .f-input:focus { border-color: #1C3A2D; box-shadow: 0 0 0 3px rgba(28,58,45,.1); }
+  textarea.f-input { min-height: 72px; resize: vertical; }
+  .save-btn { flex: 1; background: #1C3A2D; color: #fff; border: none; border-radius: 11px; padding: 13px 0; font-weight: 700; font-size: 14px; cursor: pointer; font-family: inherit; transition: opacity .18s; }
+  .save-btn:disabled { opacity: .6; cursor: not-allowed; }
+  .cancel-btn { flex: 1; background: #EDEAE3; color: #44443C; border: none; border-radius: 11px; padding: 13px 0; font-weight: 700; font-size: 14px; cursor: pointer; font-family: inherit; }
+  .btn-row { display: flex; gap: 9px; margin-top: 4px; }
+  .manage-title { font-size: 13px; font-weight: 700; margin-bottom: 10px; color: #44443C; }
+  .product-list { max-height: 280px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+  .prod-row { display: flex; align-items: center; gap: 10px; background: #F7F4EF; border-radius: 11px; padding: 10px 13px; }
+  .prod-thumb { width: 42px; height: 42px; border-radius: 8px; background: #E8E4DC; overflow: hidden; flex-shrink: 0; }
+  .prod-thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .prod-info { flex: 1; min-width: 0; }
+  .prod-name-label { font-size: 13px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .prod-meta { font-size: 11px; color: #888; }
+  .edit-btn { background: #E8F0EA; color: #1C3A2D; border: none; border-radius: 6px; padding: 5px 10px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit; }
+  .del-btn { background: #FEE2E2; color: #B91C1C; border: none; border-radius: 6px; padding: 5px 10px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit; }
+  .form-section-title { font-size: 13px; font-weight: 700; color: #1C3A2D; margin-bottom: 16px; }
+
+  /* ── RTL ── */
+  [dir="rtl"] .badge { left: auto; right: 12px; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 600px) { .grid { grid-template-columns: 1fr 1fr; gap: 14px; } }
+  @media (max-width: 400px) { .grid { grid-template-columns: 1fr; } }
+  @media (max-width: 520px) { .form-row { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div>
+    <div class="logo-name">DealGate</div>
+    <div class="logo-sub" id="tagline-text">Your gateway to the best deals</div>
+  </div>
+  <div class="header-right">
+    <div class="lang-strip" id="lang-strip"></div>
+    <button class="admin-btn" onclick="openAdmin()">⚙ <span id="t-admin">Admin</span></button>
+  </div>
+</header>
+
+<!-- HERO -->
+<div class="hero">
+  <h1>Your <span>Gateway</span> to the<br/>Best Deals</h1>
+  <p id="hero-sub">Handpicked products — unbeatable prices</p>
+</div>
+
+<!-- FILTER BAR -->
+<div class="filter-bar">
+  <div class="filter-inner">
+    <div class="scroll-x" id="cat-pills"></div>
+    <div class="filter-selects">
+      <select class="sel-f" id="price-sel" onchange="applyFilters()"></select>
+      <select class="sel-f" id="sort-sel" onchange="applyFilters()"></select>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<main>
+  <div id="product-grid"></div>
+</main>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-logo">DealGate</div>
+    <p class="disclaimer" id="disclaimer-text"></p>
+  </div>
+</footer>
+
+<!-- ADMIN MODAL -->
+<div class="overlay" id="admin-overlay" onclick="overlayClick(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="t-adminPanel">Admin Panel</div>
+      <button class="close-btn" onclick="closeAdmin()" id="t-close">Close</button>
+    </div>
+
+    <div class="form-box">
+      <div class="form-section-title" id="form-section-title">+ Add product</div>
+      <div class="form-group">
+        <label class="form-label" id="lbl-name">Product name *</label>
+        <input class="f-input" id="f-name" placeholder="e.g. Wireless Headphones"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label" id="lbl-desc">Description</label>
+        <textarea class="f-input" id="f-desc" placeholder="Short product description…"></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" id="lbl-price">Price (€) *</label>
+          <input class="f-input" id="f-price" type="number" min="0" step="0.01" placeholder="0.00"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label" id="lbl-cat">Category</label>
+          <select class="f-input" id="f-cat"></select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" id="lbl-link">Affiliate link *</label>
+        <input class="f-input" id="f-link" placeholder="https://…"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label" id="lbl-img">Image URL</label>
+        <input class="f-input" id="f-img" placeholder="https://…/image.jpg"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label" id="lbl-badge">Badge</label>
+        <select class="f-input" id="f-badge"></select>
+      </div>
+      <div class="btn-row">
+        <button class="save-btn" id="save-btn" onclick="saveProduct()">Save product</button>
+        <button class="cancel-btn" id="cancel-edit-btn" onclick="cancelEdit()" style="display:none">Cancel</button>
+      </div>
+    </div>
+
+    <div class="manage-title" id="t-manageList">Manage products (0)</div>
+    <div class="product-list" id="product-list-admin"></div>
+  </div>
+</div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────────
+const STORAGE_KEY = 'dealgate-products-v1';
+const CATEGORIES = ['Electronics','Home & Office','Sports','Beauty','Fashion','Books','Other'];
+const PRICE_RANGES = [
+  { key:'allPrices', min:0,   max:Infinity },
+  { key:'under30',  min:0,   max:30 },
+  { key:'range30',  min:30,  max:100 },
+  { key:'range100', min:100, max:300 },
+  { key:'over300',  min:300, max:Infinity },
+];
+const SORT_KEYS = ['newest','bestSellers','lowToHigh','highToLow'];
+const BADGE_STYLE = {
+  bestSeller: { bg:'#E8900A', text:'#fff', key:'badgeBestSeller' },
+  new:        { bg:'#059669', text:'#fff', key:'badgeNew' },
+  featured:   { bg:'#7C3AED', text:'#fff', key:'badgeFeatured' },
+};
+const BADGE_KEYS = ['none','bestSeller','new','featured'];
+
+const SAMPLE = [
+  { id:'s1', name:'Wireless Noise-Cancelling Headphones', description:'Premium 30h battery life, active noise cancellation. Perfect for work and travel.', price:79.99, category:'Electronics', affiliateLink:'https://amazon.com', image:'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500&h=350&fit=crop', badge:'bestSeller', createdAt: Date.now()-86400000*5 },
+  { id:'s2', name:'Ergonomic Office Chair', description:'Lumbar support, breathable mesh back and adjustable armrests for long sessions.', price:249.00, category:'Home & Office', affiliateLink:'https://amazon.com', image:'https://images.unsplash.com/photo-1592078615290-033ee584e267?w=500&h=350&fit=crop', badge:'new', createdAt: Date.now()-86400000 },
+  { id:'s3', name:'Resistance Band Set', description:'5 resistance levels, door anchor and handles included. Full-body portable gym.', price:29.99, category:'Sports', affiliateLink:'https://amazon.com', image:'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=500&h=350&fit=crop', badge:'bestSeller', createdAt: Date.now()-86400000*10 },
+  { id:'s4', name:'Vitamin C Brightening Serum', description:'20% Vitamin C + hyaluronic acid. Reduces dark spots, boosts collagen. Dermatologist tested.', price:34.50, category:'Beauty', affiliateLink:'https://amazon.com', image:'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=500&h=350&fit=crop', badge:'new', createdAt: Date.now()-86400000*2 },
+  { id:'s5', name:'4K Smart Projector', description:'Native 4K, 3500 lumens, built-in Android TV + Dolby Audio. Cinema anywhere.', price:399.00, category:'Electronics', affiliateLink:'https://amazon.com', image:'https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=500&h=350&fit=crop', badge:'featured', createdAt: Date.now()-86400000*7 },
+  { id:'s6', name:'Digital Air Fryer XL 6L', description:'8 preset modes, rapid air technology. 60% less oil than traditional frying.', price:89.99, category:'Home & Office', affiliateLink:'https://amazon.com', image:'https://images.unsplash.com/photo-1585664811087-47f65abbad64?w=500&h=350&fit=crop', badge:'bestSeller', createdAt: Date.now()-86400000*3 },
+];
+
+const I18N = {
+  en: { tagline:'Your gateway to the best deals', subtitle:'Handpicked products — unbeatable prices', allCategories:'All', newest:'Newest', bestSellers:'Best Sellers', lowToHigh:'Price ↑', highToLow:'Price ↓', allPrices:'All prices', under30:'Under €30', range30:'€30 – €100', range100:'€100 – €300', over300:'Over €300', viewDeal:'View Deal', admin:'Admin', adminPanel:'Admin Panel', addProduct:'Add product', editProduct:'Edit product', productName:'Product name *', description:'Description', price:'Price (€) *', category:'Category', affiliateLink:'Affiliate link *', imageUrl:'Image URL', badge:'Badge', save:'Save product', cancel:'Cancel', noProducts:'No products yet — add your first one!', disclaimer:'Affiliate bridge page — we act as an independent intermediary and are not responsible for the quality, availability, delivery, or after-sales service of products sold by third-party vendors. Prices and availability may change without notice. By clicking on product links you may be redirected to external websites governed by their own terms and conditions. All trademarks belong to their respective owners.', deleteProd:'Delete', editProd:'Edit', badgeNone:'None', badgeBestSeller:'Best Seller', badgeNew:'New', badgeFeatured:'Featured', manageList:'Manage products', close:'Close', noMatch:'No products match your filters.' },
+  fr: { tagline:'Votre portail vers les meilleures offres', subtitle:'Produits sélectionnés — prix imbattables', allCategories:'Tous', newest:'Nouveautés', bestSellers:'Meilleures ventes', lowToHigh:'Prix ↑', highToLow:'Prix ↓', allPrices:'Tous les prix', under30:'Moins de €30', range30:'€30 – €100', range100:'€100 – €300', over300:'Plus de €300', viewDeal:"Voir l'offre", admin:'Admin', adminPanel:'Panneau Admin', addProduct:'Ajouter un produit', editProduct:'Modifier le produit', productName:'Nom du produit *', description:'Description', price:'Prix (€) *', category:'Catégorie', affiliateLink:'Lien affilié *', imageUrl:'URL image', badge:'Badge', save:'Enregistrer', cancel:'Annuler', noProducts:'Aucun produit — ajoutez le premier !', disclaimer:"Page de redirection affiliée — nous agissons en tant qu'intermédiaire indépendant et ne sommes pas responsables de la qualité, disponibilité, livraison ou service après-vente des produits proposés par des vendeurs tiers. Les prix et disponibilités sont susceptibles de changer sans préavis. En cliquant sur les liens, vous pouvez être redirigé vers des sites externes soumis à leurs propres conditions d'utilisation. Toutes les marques appartiennent à leurs propriétaires respectifs.", deleteProd:'Supprimer', editProd:'Modifier', badgeNone:'Aucun', badgeBestSeller:'Best Seller', badgeNew:'Nouveau', badgeFeatured:'En vedette', manageList:'Gérer les produits', close:'Fermer', noMatch:'Aucun produit ne correspond aux filtres.' },
+  es: { tagline:'Tu puerta de acceso a las mejores ofertas', subtitle:'Productos seleccionados — precios inmejorables', allCategories:'Todos', newest:'Novedades', bestSellers:'Más vendidos', lowToHigh:'Precio ↑', highToLow:'Precio ↓', allPrices:'Todos los precios', under30:'Menos de €30', range30:'€30 – €100', range100:'€100 – €300', over300:'Más de €300', viewDeal:'Ver oferta', admin:'Admin', adminPanel:'Panel Admin', addProduct:'Añadir producto', editProduct:'Editar producto', productName:'Nombre del producto *', description:'Descripción', price:'Precio (€) *', category:'Categoría', affiliateLink:'Enlace de afiliado *', imageUrl:'URL de imagen', badge:'Insignia', save:'Guardar', cancel:'Cancelar', noProducts:'Sin productos — ¡añade el primero!', disclaimer:'Página puente de afiliados — actuamos como intermediarios independientes y no somos responsables de la calidad, disponibilidad, entrega o servicio posventa de los productos ofrecidos por terceros. Los precios y disponibilidad pueden cambiar sin previo aviso. Al hacer clic en los enlaces puede ser redirigido a sitios web externos con sus propias condiciones. Todas las marcas pertenecen a sus respectivos propietarios.', deleteProd:'Eliminar', editProd:'Editar', badgeNone:'Ninguno', badgeBestSeller:'Más Vendido', badgeNew:'Nuevo', badgeFeatured:'Destacado', manageList:'Gestionar', close:'Cerrar', noMatch:'Sin resultados para estos filtros.' },
+  de: { tagline:'Ihr Tor zu den besten Angeboten', subtitle:'Ausgewählte Produkte — unschlagbare Preise', allCategories:'Alle', newest:'Neuheiten', bestSellers:'Bestseller', lowToHigh:'Preis ↑', highToLow:'Preis ↓', allPrices:'Alle Preise', under30:'Unter €30', range30:'€30 – €100', range100:'€100 – €300', over300:'Über €300', viewDeal:'Angebot ansehen', admin:'Admin', adminPanel:'Admin-Panel', addProduct:'Produkt hinzufügen', editProduct:'Produkt bearbeiten', productName:'Produktname *', description:'Beschreibung', price:'Preis (€) *', category:'Kategorie', affiliateLink:'Affiliate-Link *', imageUrl:'Bild-URL', badge:'Abzeichen', save:'Speichern', cancel:'Abbrechen', noProducts:'Noch keine Produkte — füge das erste hinzu!', disclaimer:'Affiliate-Bridge-Seite — wir handeln als unabhängige Vermittler und sind nicht verantwortlich für Qualität, Verfügbarkeit, Lieferung oder Kundendienst der von Drittanbietern angebotenen Produkte. Preise und Verfügbarkeit können sich ohne Vorankündigung ändern. Durch Klicken auf Links können Sie zu externen Websites weitergeleitet werden, die ihren eigenen Nutzungsbedingungen unterliegen. Alle Marken gehören ihren jeweiligen Eigentümern.', deleteProd:'Löschen', editProd:'Bearbeiten', badgeNone:'Kein', badgeBestSeller:'Bestseller', badgeNew:'Neu', badgeFeatured:'Empfohlen', manageList:'Verwalten', close:'Schließen', noMatch:'Keine Produkte für diese Filter.' },
+  ar: { tagline:'بوابتك إلى أفضل الصفقات', subtitle:'منتجات مختارة — أسعار لا تُضاهى', allCategories:'الكل', newest:'الأحدث', bestSellers:'الأكثر مبيعاً', lowToHigh:'السعر ↑', highToLow:'السعر ↓', allPrices:'جميع الأسعار', under30:'أقل من €30', range30:'€30 – €100', range100:'€100 – €300', over300:'أكثر من €300', viewDeal:'عرض الصفقة', admin:'إدارة', adminPanel:'لوحة الإدارة', addProduct:'إضافة منتج', editProduct:'تعديل المنتج', productName:'اسم المنتج *', description:'الوصف', price:'السعر (€) *', category:'الفئة', affiliateLink:'رابط التابع *', imageUrl:'رابط الصورة', badge:'شارة', save:'حفظ', cancel:'إلغاء', noProducts:'لا توجد منتجات بعد — أضف الأول!', disclaimer:'هذه صفحة وسيطة للتسويق بالعمولة — نحن نتصرف كوسطاء مستقلين ولسنا مسؤولين عن جودة أو توافر أو توصيل أو خدمة ما بعد البيع للمنتجات المقدمة من بائعين خارجيين. قد تتغير الأسعار والتوافر دون إشعار مسبق. بالنقر على الروابط قد يتم توجيهك إلى مواقع خارجية لها شروطها الخاصة.', deleteProd:'حذف', editProd:'تعديل', badgeNone:'لا شيء', badgeBestSeller:'الأكثر مبيعاً', badgeNew:'جديد', badgeFeatured:'مميز', manageList:'إدارة المنتجات', close:'إغلاق', noMatch:'لا توجد منتجات تطابق الفلتر.' },
+};
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let lang = 'en';
+let products = [];
+let activeCat = 'all';
+let priceIdx = 0;
+let sortKey = 'newest';
+let editId = null;
+
+function t(key) { return (I18N[lang] || I18N.en)[key] || key; }
+
+// ── PERSISTENCE ───────────────────────────────────────────────────────────────
+function load() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    products = raw ? JSON.parse(raw) : SAMPLE;
+  } catch { products = SAMPLE; }
+  if (!products.length) products = SAMPLE;
+}
+function save() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(products)); } catch {}
+}
+
+// ── LANGUAGE ──────────────────────────────────────────────────────────────────
+const LANGS = [{ code:'en', label:'EN' },{ code:'fr', label:'FR' },{ code:'es', label:'ES' },{ code:'de', label:'DE' },{ code:'ar', label:'AR' }];
+
+function buildLangStrip() {
+  const strip = document.getElementById('lang-strip');
+  strip.innerHTML = LANGS.map(l =>
+    `<button class="lbtn ${lang===l.code?'active':''}" onclick="setLang('${l.code}')">${l.label}</button>`
+  ).join('');
+}
+function setLang(code) {
+  lang = code;
+  document.documentElement.lang = code;
+  document.body.dir = code === 'ar' ? 'rtl' : 'ltr';
+  buildLangStrip();
+  updateAllText();
+  buildFilters();
+  renderGrid();
+  renderAdminList();
+}
+function updateAllText() {
+  document.getElementById('tagline-text').textContent = t('tagline');
+  document.getElementById('hero-sub').textContent = t('subtitle');
+  document.getElementById('disclaimer-text').textContent = t('disclaimer');
+  document.getElementById('t-admin').textContent = t('admin');
+  document.getElementById('t-adminPanel').textContent = t('adminPanel');
+  document.getElementById('t-close').textContent = t('close');
+  document.getElementById('lbl-name').textContent = t('productName');
+  document.getElementById('lbl-desc').textContent = t('description');
+  document.getElementById('lbl-price').textContent = t('price');
+  document.getElementById('lbl-cat').textContent = t('category');
+  document.getElementById('lbl-link').textContent = t('affiliateLink');
+  document.getElementById('lbl-img').textContent = t('imageUrl');
+  document.getElementById('lbl-badge').textContent = t('badge');
+  document.getElementById('save-btn').textContent = t('save');
+  if (editId) {
+    document.getElementById('form-section-title').textContent = '✏️ ' + t('editProduct');
+    document.getElementById('cancel-edit-btn').textContent = t('cancel');
+  } else {
+    document.getElementById('form-section-title').textContent = '+ ' + t('addProduct');
+  }
+  // Rebuild badge select options
+  const bSel = document.getElementById('f-badge');
+  const bVal = bSel.value;
+  bSel.innerHTML = BADGE_KEYS.map(k => `<option value="${k}">${t('badge'+k.charAt(0).toUpperCase()+k.slice(1)||'badgeNone')}</option>`).join('');
+  // fix key mapping
+  bSel.innerHTML = `<option value="none">${t('badgeNone')}</option><option value="bestSeller">${t('badgeBestSeller')}</option><option value="new">${t('badgeNew')}</option><option value="featured">${t('badgeFeatured')}</option>`;
+  bSel.value = bVal || 'none';
+}
+
+// ── FILTERS ───────────────────────────────────────────────────────────────────
+function buildFilters() {
+  // Category pills
+  const pillContainer = document.getElementById('cat-pills');
+  const cats = ['all', ...CATEGORIES];
+  pillContainer.innerHTML = cats.map(c =>
+    `<button class="pill ${activeCat===c?'active':''}" onclick="setCat('${c}')">${c==='all'?t('allCategories'):c}</button>`
+  ).join('');
+
+  // Price select
+  const pSel = document.getElementById('price-sel');
+  const pVal = pSel.value;
+  pSel.innerHTML = PRICE_RANGES.map((r,i) => `<option value="${i}">${t(r.key)}</option>`).join('');
+  pSel.value = priceIdx;
+
+  // Sort select
+  const sSel = document.getElementById('sort-sel');
+  sSel.innerHTML = SORT_KEYS.map(k => `<option value="${k}">${t(k)}</option>`).join('');
+  sSel.value = sortKey;
+}
+function setCat(c) { activeCat = c; buildFilters(); renderGrid(); }
+function applyFilters() {
+  priceIdx = parseInt(document.getElementById('price-sel').value);
+  sortKey  = document.getElementById('sort-sel').value;
+  buildFilters();
+  renderGrid();
+}
+
+// ── GRID RENDER ───────────────────────────────────────────────────────────────
+function getDisplayed() {
+  let list = [...products];
+  if (activeCat !== 'all') list = list.filter(p => p.category === activeCat);
+  const { min, max } = PRICE_RANGES[priceIdx];
+  list = list.filter(p => p.price >= min && p.price <= max);
+  if (sortKey === 'newest')      list.sort((a,b) => b.createdAt - a.createdAt);
+  else if (sortKey === 'bestSellers') list.sort((a,b) => (b.badge==='bestSeller'?1:0)-(a.badge==='bestSeller'?1:0));
+  else if (sortKey === 'lowToHigh')   list.sort((a,b) => a.price - b.price);
+  else if (sortKey === 'highToLow')   list.sort((a,b) => b.price - a.price);
+  return list;
+}
+
+function renderGrid() {
+  const grid = document.getElementById('product-grid');
+  const displayed = getDisplayed();
+  if (!displayed.length) {
+    grid.innerHTML = `<div class="empty-state"><div class="empty-icon">🛒</div><p>${products.length===0?t('noProducts'):t('noMatch')}</p></div>`;
+    return;
+  }
+  grid.innerHTML = `<div class="grid">${displayed.map(cardHTML).join('')}</div>`;
+}
+
+function cardHTML(p) {
+  const bs = p.badge && BADGE_STYLE[p.badge];
+  const imgHTML = p.image
+    ? `<img src="${esc(p.image)}" alt="${esc(p.name)}" onerror="this.parentElement.innerHTML='<div class=card-img-placeholder>🛍️</div>'"/>`
+    : `<div class="card-img-placeholder">🛍️</div>`;
+  const badgeHTML = bs ? `<span class="badge badge-${p.badge}">${t(bs.key)}</span>` : '';
+  return `
+    <div class="card">
+      <div class="card-img">${imgHTML}${badgeHTML}</div>
+      <div class="card-body">
+        <div class="card-cat">${esc(p.category)}</div>
+        <div class="card-name">${esc(p.name)}</div>
+        <div class="card-desc">${esc(p.description)}</div>
+        <div class="card-price">€${p.price.toFixed(2)}</div>
+        <a class="cta" href="${esc(p.affiliateLink)}" target="_blank" rel="noopener noreferrer">${t('viewDeal')} →</a>
+      </div>
+    </div>`;
+}
+
+// ── ADMIN MODAL ───────────────────────────────────────────────────────────────
+function openAdmin() {
+  const pw = prompt('🔒 Admin password:');
+  if (pw === null) return;
+  if (pw !== 'Emerald') { alert('Incorrect password.'); return; }
+  // Populate category select
+  document.getElementById('f-cat').innerHTML = CATEGORIES.map(c => `<option value="${c}">${c}</option>`).join('');
+  document.getElementById('admin-overlay').classList.add('open');
+  updateAllText();
+  renderAdminList();
+}
+function closeAdmin() {
+  document.getElementById('admin-overlay').classList.remove('open');
+  cancelEdit();
+}
+function overlayClick(e) { if (e.target === e.currentTarget) closeAdmin(); }
+
+function renderAdminList() {
+  const list = document.getElementById('product-list-admin');
+  document.getElementById('t-manageList').textContent = `${t('manageList')} (${products.length})`;
+  if (!products.length) {
+    list.innerHTML = `<p style="color:#aaa;font-size:13px;text-align:center;padding:20px 0">${t('noProducts')}</p>`;
+    return;
+  }
+  list.innerHTML = products.map(p => `
+    <div class="prod-row">
+      <div class="prod-thumb">${p.image?`<img src="${esc(p.image)}" alt="" onerror="this.style.display='none'"/>`:''}
+      </div>
+      <div class="prod-info">
+        <div class="prod-name-label">${esc(p.name)}</div>
+        <div class="prod-meta">€${p.price.toFixed(2)} · ${esc(p.category)}</div>
+      </div>
+      <button class="edit-btn" onclick="startEdit('${p.id}')">${t('editProd')}</button>
+      <button class="del-btn" onclick="deleteProduct('${p.id}')">${t('deleteProd')}</button>
+    </div>`).join('');
+}
+
+function startEdit(id) {
+  const p = products.find(x => x.id === id);
+  if (!p) return;
+  editId = id;
+  document.getElementById('f-name').value  = p.name;
+  document.getElementById('f-desc').value  = p.description || '';
+  document.getElementById('f-price').value = p.price;
+  document.getElementById('f-cat').value   = p.category;
+  document.getElementById('f-link').value  = p.affiliateLink;
+  document.getElementById('f-img').value   = p.image || '';
+  document.getElementById('f-badge').value = p.badge || 'none';
+  document.getElementById('form-section-title').textContent = '✏️ ' + t('editProduct');
+  document.getElementById('cancel-edit-btn').style.display = 'block';
+  document.querySelector('.modal').scrollTo({top:0, behavior:'smooth'});
+}
+function cancelEdit() {
+  editId = null;
+  clearForm();
+  document.getElementById('form-section-title').textContent = '+ ' + t('addProduct');
+  document.getElementById('cancel-edit-btn').style.display = 'none';
+}
+function clearForm() {
+  ['f-name','f-desc','f-price','f-link','f-img'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('f-cat').value = CATEGORIES[0];
+  document.getElementById('f-badge').value = 'none';
+}
+
+function saveProduct() {
+  const name  = document.getElementById('f-name').value.trim();
+  const price = parseFloat(document.getElementById('f-price').value);
+  const link  = document.getElementById('f-link').value.trim();
+  if (!name || isNaN(price) || !link) {
+    alert('Please fill in the required fields (Name, Price, Affiliate Link).');
+    return;
+  }
+  const prod = {
+    id: editId || String(Date.now()),
+    name,
+    description: document.getElementById('f-desc').value.trim(),
+    price,
+    category:      document.getElementById('f-cat').value,
+    affiliateLink: link,
+    image:         document.getElementById('f-img').value.trim(),
+    badge:         document.getElementById('f-badge').value === 'none' ? null : document.getElementById('f-badge').value,
+    createdAt: editId ? (products.find(p=>p.id===editId)?.createdAt || Date.now()) : Date.now(),
+  };
+  if (editId) {
+    products = products.map(p => p.id === editId ? prod : p);
+  } else {
+    products = [prod, ...products];
+  }
+  save();
+  cancelEdit();
+  renderGrid();
+  renderAdminList();
+}
+
+function deleteProduct(id) {
+  if (!confirm('Delete this product?')) return;
+  products = products.filter(p => p.id !== id);
+  save();
+  renderGrid();
+  renderAdminList();
+}
+
+// ── UTIL ──────────────────────────────────────────────────────────────────────
+function esc(str) {
+  return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+load();
+buildLangStrip();
+updateAllText();
+buildFilters();
+// Populate admin category + badge on DOM ready
+document.getElementById('f-cat').innerHTML = CATEGORIES.map(c=>`<option value="${c}">${c}</option>`).join('');
+document.getElementById('f-badge').innerHTML = `<option value="none">${t('badgeNone')}</option><option value="bestSeller">${t('badgeBestSeller')}</option><option value="new">${t('badgeNew')}</option><option value="featured">${t('badgeFeatured')}</option>`;
+renderGrid();
+document.getElementById('disclaimer-text').textContent = t('disclaimer');
+</script>
+</body>
+</html>
